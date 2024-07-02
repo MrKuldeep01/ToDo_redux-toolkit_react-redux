@@ -1,8 +1,4 @@
-Sure, here is a README file for a React Redux application using Redux Toolkit to create a Todo application with functionality to add and remove todos:
-
----
-
-# Todo App with React, Redux, and Redux Toolkit
+# 😅👩‍💻🐞 Todo App with React, Redux, and Redux Toolkit
 
 This project is a simple Todo application built using React, Redux, and Redux Toolkit. The application allows you to add and remove todos.
 
@@ -30,8 +26,8 @@ This application demonstrates the basic usage of React with Redux and Redux Tool
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/todo-app.git
-cd todo-app
+git clone https://github.com/MrKuldeep01/ToDo_redux-toolkit_react-redux.git
+cd ToDo_redux-toolkit_react-redux
 ```
 
 2. Install the dependencies:
@@ -43,12 +39,12 @@ npm install
 3. Start the development server:
 
 ```bash
-npm start
+npm run dev
 ```
 
 ## Usage
 
-Open your browser and navigate to `http://localhost:3000` to see the Todo application in action. You can add new todos and remove existing ones.
+Open your browser and navigate to `http://localhost:5173` to see the Todo application in action. You can add new todos and remove existing ones.
 
 ## Concepts
 
@@ -81,34 +77,38 @@ To add a todo, use the `addTodo` action. This action takes a todo object and add
 Example usage in a component:
 
 ```jsx
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addTodo } from './todoSlice';
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { addTodo } from "../featurs/todo/todoSlice";
 
 const AddTodo = () => {
-  const [text, setText] = useState('');
-  const dispatch = useDispatch();
 
-  const handleAddTodo = () => {
-    if (text.trim().length > 0) {
-      dispatch(addTodo({
-        id: Date.now(),
-        text: text.trim()
-      }));
-      setText('');
+  const [text, setText] = useState("");
+  const dispatch = useDispatch();
+  // dispatch : reducer ka use kr k store me change krta he
+  const addTodoHandler = (e) => {
+    e.preventDefault();
+    if(text == ''){
+      alert('please fill the description, to move further!')
+    }
+    else{
+      dispatch(addTodo(text))
+      setText("")
     }
   };
-
   return (
-    <div>
-      <input 
-        type="text" 
-        value={text} 
-        onChange={(e) => setText(e.target.value)} 
-        placeholder="Add a new todo"
+    <form onSubmit={addTodoHandler} className="flex-col w-full h-[25vh] flex justify-center items-start relative border-slate-700/10 border-2 rounded gap-4">
+      <textarea 
+        type="text"
+        className="w-full p-2 bg-white/30 h-full
+        outline-gray-400 resize-none font-extralight"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="description for your todo"
+
       />
-      <button onClick={handleAddTodo}>Add Todo</button>
-    </div>
+      <button type="submit" className="absolute bottom-1 right-1 px-2 py-1 bg-blue-500 text-lg text-white outline-2 outline-slate-600 rounded">Submit</button>
+    </form>
   );
 };
 
@@ -122,26 +122,42 @@ To remove a todo, use the `removeTodo` action. This action takes the id of the t
 Example usage in a component:
 
 ```jsx
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import { removeTodo } from './todoSlice';
+import { useSelector, useDispatch } from "react-redux";
+import { removeTodo} from "../featurs/todo/todoSlice";
 
-const TodoItem = ({ id, text }) => {
+const Todos = () => {
+  // useSelector have access of state by default
+  const todoArray = useSelector((state) => state.todos);
   const dispatch = useDispatch();
-
-  const handleRemoveTodo = () => {
-    dispatch(removeTodo(id));
-  };
-
   return (
-    <div>
-      <span>{text}</span>
-      <button onClick={handleRemoveTodo}>Remove</button>
+    <div className="ListingTodo min-h-[70vh] w-full flex-col justify-center item-center gap-3 bg-slate-700/30 my-4 p-3 rounded-sm">
+      <ul>
+        {todoArray.map((todo) => (
+          <li
+            key={todo.id}
+            className="px-3 py-2 my-2 w-full rounded bg-slate-700/60 text-white sm:flex justify-between item-center relative"
+          >
+            <span className="text-lg font-semibold max-w-1/2 h-auto">
+              {todo.desc}
+            </span>
+
+            <button
+            title="Delete task"
+              className="bg-red-600/80 text-white py-1 px-2 rounded "
+              onClick={() => {
+                dispatch(removeTodo(todo.id));
+              }}
+            >
+              X
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default TodoItem;
+export default Todos;
 ```
 
 ## Example Slice
@@ -150,24 +166,47 @@ Here is an example of how to create a slice using Redux Toolkit for managing tod
 
 ```jsx
 // todoSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { nanoid, createSlice } from "@reduxjs/toolkit";
 
-const todoSlice = createSlice({
-  name: 'todos',
-  initialState: [],
+const initialState = {
+  todos: [
+    {
+      id: 1,
+      desc: "hello todo again@!",
+      createdAt: Date.now(),
+    },
+  ],
+};
+
+// state : current state for variable
+// action : passed values to us
+export const todoSlice = createSlice({
+  name: "todo",
+  initialState,
   reducers: {
     addTodo: (state, action) => {
-      state.push(action.payload);
+      const todo = {
+        id: nanoid(),
+        desc: action.payload,
+      };
+      state.todos.unshift(todo);
     },
     removeTodo: (state, action) => {
-      return state.filter(todo => todo.id !== action.payload);
-    }
-  }
+      const id = action.payload;
+      state.todos = state.todos.filter((todo) => todo.id !== id);
+    },
+    updateTodo: (state, action) => {
+      const id = action.payload.id;
+      state.todos.map((todo) =>
+        todo.id === id ? (todo.desc = action.payload.desc) : todo
+      );
+    },
+  },
 });
 
-export const { addTodo, removeTodo } = todoSlice.actions;
-
+export const { addTodo, removeTodo, updateTodo } = todoSlice.actions;
 export default todoSlice.reducer;
+
 ```
 
 ## Store Configuration
@@ -176,13 +215,11 @@ Configure the Redux store using the `configureStore` function:
 
 ```jsx
 // store.js
-import { configureStore } from '@reduxjs/toolkit';
-import todoReducer from './todoSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import todoReducer from "../featurs/todo/todoSlice";
 
 export const store = configureStore({
-  reducer: {
-    todos: todoReducer
-  }
+  reducer: todoReducer,
 });
 ```
 
@@ -207,3 +244,6 @@ ReactDOM.render(
 ```
 
 That's it! You now have a working Todo application using React, Redux, and Redux Toolkit.
+### This is all about i have learned by lacture, which is directed by
+## `Hites sir` from Chai aur Code YouTube channel.
+# Big Thanks 😅☕👨‍💻

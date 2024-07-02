@@ -1,6 +1,5 @@
-import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { removeTodo, updateTodo } from "../featurs/todo/todoSlice";
+import { removeTodo} from "../featurs/todo/todoSlice";
 
 const Todos = () => {
   // useSelector have access of state by default
